@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<!-- JS ажиллаж байгаа эсэхийг CSS-д мэдэгдэнэ. Ил гарах элементүүдийг зөвхөн
+     JS байгаа үед нуудаг — эс тэгвэл JS унавал хуудас хоосон үлдэнэ. -->
+<script>document.documentElement.className = 'js is-locked';</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070C1A">
+<title>Сэвлэг үргээх ёслол · Монголхүү</title>
+<meta name="description" content="Монголхүүгийн сэвлэг үргээх ёслол — 2026.09.15, Дархан хот.">
+
+<!-- Шрифт. Spectral болон Onest хоёул кирилл (U+0400-045F) ба кирилл-өргөтгөл
+     (U+0460-052F — ө, ү энд байдаг) subset-тэй нь шалгагдсан. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;1,300&family=Onest:wght@300;400&display=swap">
+
+<style>
+/* ============================================================
+   ТОКЕН — өнгө, шрифт, хэмнэл. Бүх утга энд, өөр хаана ч биш.
+   ============================================================ */
+:root{
+  /* Шөнөөс өглөө хүртэл — гүйлгэх аяллын өнгөний зам.
+     Нээх дэлгэц шөнө. Гэрлийн одонд хүрмэгц тэнгэр цайрч өглөө болно.
+     Доошлох тусам цэнхэр тэнгэр, эцэст нь ногоон тал. */
+  --night:    #070C1A;   /* нээх дэлгэц — хамгийн гүн шөнө */
+  --morning:  #14243C;   /* од хүрсний дараа — тэнгэр цайрч эхлэв */
+  --day:      #21486F;   /* цэнхэр тэнгэр */
+  --steppe:   #27503C;   /* ногоон тал */
+
+  --amber:    #E9A45C;   /* үүрийн туяа — ГЭРЭЛ. Гэрэл байгаа газарт л энэ өнгө. */
+  --amber-hi: #FFD9A8;   /* туяаны хамгийн гэрэлт цэг, glow-ийн цөм */
+  --milk:     #F3EFE6;   /* сүү, цагаан идээ — үндсэн текст */
+  --sky:      #7FA8C9;   /* хүйтэн акцент — зөвхөн 2-3 газарт */
+  /* .55 байсан. Тэнгэр цэнхэр, ногоон болж гэрэлтсэн тул жижиг шошгын
+     тодролт 3.7:1 болж унасан — .72 болгож 5:1 дээш өргөв. */
+  --muted:    rgba(243,239,230,.72);
+
+  /* Дэвсгэрийн одоогийн өнгө. Үе шат 3-д ScrollTrigger үүнийг scrub-ддэг. */
+  --bg: var(--night);
+
+  /* Шрифт */
+  --font-display: 'Spectral', 'Times New Roman', Georgia, serif;
+  --font-ui: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Хэмжээний 4 түвшин (+ countdown-ы тоо). Нэг дэлгэцэнд 4-өөс олонг бүү холь. */
+  --t-name:  clamp(3.2rem, 18vw, 5.4rem);
+  --t-num:   clamp(2.4rem, 13vw, 3.4rem);
+  /* Шүлгийн мөр таслагдвал шүлэг байхаа болино — нарийн дэлгэцэд бага зэрэг буурна */
+  --t-verse: clamp(1.02rem, 4.9vw, 1.25rem);
+  --t-body:  .95rem;
+  --t-label: .63rem;
+
+  /* Хөдөлгөөний хэл — ганц easing, урт хугацаа */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-reveal: 1.2s;
+  --stagger: .12s;
+
+  /* Хэлбэр — нимгэн хүрээ, бараг тэгш өнцөг */
+  --hair: .5px solid rgba(243,239,230,.14);
+  --radius: 4px;
+
+  /* Зай */
+  --shell: 460px;                       /* агуулгын өргөн, мобайл гол зорилт */
+  --pad: clamp(22px, 6.5vw, 34px);
+  --gap-section: clamp(72px, 18vw, 112px);
+
+  /* Glow-ийн цорын ганц жор. Ирмэг нь үргэлж зөөлөн, өнгө нь үргэлж дулаан. */
+  --glow-soft: radial-gradient(circle,
+      rgba(255,217,168,.55) 0%,
+      rgba(255,217,168,.14) 38%,
+      transparent 70%);
+}
+
+/* ============================================================
+   СУУРЬ
+   ============================================================ */
+*, *::before, *::after{ box-sizing: border-box; }
+
+html{ -webkit-text-size-adjust: 100%; }
+
+body{
+  margin: 0;
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--milk);
+  font-family: var(--font-ui);
+  font-weight: 300;
+  font-size: var(--t-body);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  /* Дэвсгэрийн өнгийг ScrollTrigger scrub-ддэг тул CSS transition тавихгүй —
+     хоёулаа нэг шинжийг бичвэл хоцролт үүснэ. */
+}
+
+/* Нээх дэлгэц түгжээтэй үед ард нь агуулга гүйхгүй.
+   html, body хоёуланд нь тавина — зөвхөн body-д тавихад гүйлт үлддэг. */
+.is-locked{ overflow: hidden; height: 100svh; }
+
+/* Дэлгэц өргөн үед хоёр талыг шөнийн тэнгэрээр дүүргэж, агуулгыг төвлөрүүлнэ */
+.shell{
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+h1, h2, h3, p, figure, ul, ol{ margin: 0; }
+ul, ol{ padding: 0; list-style: none; }
+a{ color: inherit; }
+
+/* Focus нь үргэлж харагдана — Tab-аар явахад мөр алдагдахгүй */
+:focus-visible{
+  outline: 1px solid var(--amber);
+  outline-offset: 3px;
+}
+
+/* --- Типографийн туслах ангиуд --- */
+.label{
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: var(--t-label);
+  letter-spacing: .4em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.name{
+  font-family: var(--font-display);
+  font-weight: 200;
+  font-size: var(--t-name);
+  letter-spacing: -.02em;
+  line-height: .95;
+}
+.verse{
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  /* --verse-size-г JS зөвхөн мөр багтахгүй үед тавина */
+  font-size: var(--verse-size, var(--t-verse));
+  line-height: 2;
+}
+.num{
+  font-family: var(--font-display);
+  font-weight: 200;
+  font-size: var(--t-num);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   СЕКШНҮҮДИЙН АРАГ ЯС
+   ============================================================ */
+.section{ padding-block: var(--gap-section); position: relative; }
+
+/* Секшн хоорондын зааг — шугам биш, бүдэг хэвтээ туяа.
+   Үе шат 3-д scroll-оор scaleX .6 -> 1 болно. */
+.seam{
+  height: 1px; border: 0; margin: 0;
+  background: radial-gradient(ellipse 60% 100% at 50% 50%,
+      rgba(243,239,230,.22) 0%, transparent 75%);
+  transform: scaleX(.6);
+  transform-origin: 50% 50%;
+}
+
+#gallery[hidden]{ display: none; }
+
+/* ============================================================
+   ҮЕ ШАТ 2 — НЭЭХ ДЭЛГЭЦ (signature)
+   ============================================================ */
+#open{
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  cursor: pointer;
+  background:
+    radial-gradient(120% 70% at 50% 106%, #0C1428 0%, rgba(12,20,40,0) 62%),
+    var(--night);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+#open[hidden]{ display: none; }
+
+/* --- Одтой тэнгэр: 3 давхарга ---
+   Гадна элемент нь маш удаан өөрөө хөвнө, дотор элемент нь хурууг дагана.
+   Хоёрыг салгасан шалтгаан: нэг элемент дээр хоёр transform зөрчилддөг. */
+.sky{
+  position: absolute;
+  inset: -10%;                      /* parallax хөдлөхөд ирмэг ил гарахгүй */
+  pointer-events: none;
+}
+.sky__drift, .sky__par{ position: absolute; inset: 0; }
+
+.star{
+  position: absolute;
+  border-radius: 50%;
+  background: var(--milk);
+}
+/* 10-аас нэг нь л тод. Glow зөвшөөрөгдсөн гурван газрын нэг нь энэ. */
+.star--hi{
+  background: var(--amber-hi);
+  box-shadow: 0 0 5px 1px rgba(255,217,168,.42);
+  animation: twinkle 5.5s var(--ease) infinite;
+}
+@keyframes twinkle{
+  0%, 100%{ opacity: .35; }
+  50%     { opacity: 1; }
+}
+
+/* --- Хуруу дагах зөөлөн туяа --- */
+.aura{
+  position: absolute;
+  top: 0; left: 0;
+  width: 300px; height: 300px;
+  margin: -150px 0 0 -150px;
+  background: var(--glow-soft);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* --- Гэрлийн утас --- */
+.thread{
+  position: absolute;
+  top: 0; left: 50%;
+  width: 240px;
+  height: min(74svh, 660px);
+  transform: translateX(-50%);
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* --- Тасралтын дэлбэрэлт: гурван glow-ийн хоёр дахь нь. Хамгийн хүчтэй нь энд.
+   Ганц газарт цөмтэй байхыг зөвшөөрсөн — эс тэгвэл цохилт биш манан болно.
+   Ирмэг нь бусад бүх glow-той адил зөөлөн. --- */
+.burst{
+  position: absolute;
+  top: 0; left: 0;
+  width: 420px; height: 420px;
+  margin: -210px 0 0 -210px;
+  background: radial-gradient(circle,
+      rgba(255,241,219,.98) 0%,
+      rgba(255,217,168,.72) 9%,
+      rgba(255,217,168,.26) 30%,
+      rgba(233,164,92,.08) 50%,
+      transparent 70%);
+  opacity: 0;
+  transform: scale(.15);
+  pointer-events: none;
+}
+
+/* --- Гэрэлд уусах хөшиг --- */
+.veil{
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--vx, 50%) var(--vy, 46%),
+      rgba(255,217,168,.98) 0%,
+      rgba(255,217,168,.55) 26%,
+      rgba(233,164,92,.16) 52%,
+      rgba(233,164,92,0) 74%);
+}
+
+/* --- Утасны доорх мөр --- */
+.open__foot{
+  position: absolute;
+  left: 50%;
+  top: min(78svh, 700px);
+  transform: translateX(-50%);
+  width: min(88vw, 400px);
+  text-align: center;
+}
+.open__line{
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: rgba(243,239,230,.72);
+}
+.open__hint{ display: block; margin-top: 20px; }
+
+/* ============================================================
+   ҮЕ ШАТ 3 — HERO
+   ============================================================ */
+
+/* Ил гарах элементүүд. Зөвхөн JS ажиллаж байвал нуугдана. */
+.js .rv{ opacity: 0; }
+
+#hero{
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: clamp(96px, 22vh, 150px) var(--gap-section);
+}
+
+.hero__above{ display: block; margin-bottom: 22px; }
+
+/* Нэр — доор нь үсгүүд, дээр нь туяаны давхарга. Хоёул ижил span-уудтай тул
+   кернинг зөрөхгүй. */
+.hero__name{ position: relative; display: block; }
+/* Нэр хэзээ ч мөр таслахгүй. Багтахгүй бол JS үсгийн хэмжээг багасгана —
+   CONFIG-д ямар ч урттай нэр тавьсан ажиллах ёстой. */
+.name__letters,
+.name__sweep{ white-space: nowrap; }
+/* inline-block — эс тэгвэл inline элементийн бодит өргөнийг хэмжиж чадахгүй */
+.name__letters{ display: inline-block; }
+.name__letters span,
+.name__sweep span{ display: inline-block; }
+/* will-change-ийг CSS-д тавихгүй — тэгвэл насаараа үлдэнэ. JS нь зөвхөн
+   хөдлөх агшинд өгч, дуусмагц нь буцааж авна. */
+
+/* Амбер туяа — нэг удаа зүүнээс баруун тийш гулсана.
+   Ил харагдах зурвас нь нарийхан, доор нь сүүн өнгийн үсгүүд хэвээр байна. */
+.name__sweep{
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  pointer-events: none;
+  /* Зурвасын цөм нь --amber-hi, хажуу тал нь ханасан --amber.
+     Зөвхөн amber-hi-гаар хийвэл сүүн цагаан үсгэн дээр бараг ялгарахгүй —
+     ханасан амбер хүрээ л туяаг уншигдахуйц болгож байна. */
+  background-image: linear-gradient(100deg,
+      transparent 30%,
+      rgba(233,164,92,.55) 42%,
+      rgba(255,217,168,1)  50%,
+      rgba(233,164,92,.55) 58%,
+      transparent 70%);
+  background-size: 260% 100%;
+  background-position: 140% 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero__below{
+  margin-top: 20px;
+  color: var(--muted);
+  max-width: 26ch;
+  text-wrap: balance;   /* "байна" ганцаараа мөр эзлэхээс сэргийлнэ */
+}
+
+/* Нас — шугамтай хамт. Төвлөрүүлэхгүй, зүүн зэрэгцүүлснээр хэмнэл төрнө. */
+.hero__meta{
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.hero__rule{ flex: 1; height: 0; border-top: var(--hair); }
+
+/* Шүлэг — цорын ганц догол мөр. Энэ шилжилт нь хуудсанд амьсгал өгнө. */
+.hero__verse{
+  margin-top: 50px;
+  padding-left: clamp(13px, 4.5vw, 20px);
+  border-left: var(--hair);
+}
+
+.hero__date{ margin-top: 50px; }
+.hero__day{
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--t-verse);
+  margin-top: 8px;
+}
+.hero__hour{ color: var(--muted); margin-top: 2px; }
+
+/* Эцэг эх — баруун тийш. Зүүн зэрэгцсэн блокуудын эсрэг тэнцвэр. */
+.hero__parents{ display: block; margin-top: 44px; text-align: right; }
+
+/* ============================================================
+   ҮЕ ШАТ 4 — COUNTDOWN, ХӨТӨЛБӨР, БАЙРШИЛ, ЁСЛОЛЫН ЁС
+   ============================================================ */
+
+/* Секшний шошго — бүх секшнд нэг хэмнэл */
+.sec__label{ display: block; margin-bottom: 34px; }
+
+/* --- Countdown — 4 нүд --- */
+.cd{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(6px, 2.5vw, 14px);
+}
+.cd__cell{ border-top: var(--hair); padding-top: 14px; }
+.cd__num{
+  color: var(--amber);              /* гэрэл байгаа газарт л амбер */
+  display: block;
+  /* Секунд солигдох бүрт эрчим нь тэсэрч буцаж унтарна. Гурав дахь бөгөөд
+     сүүлчийн glow-ийн байршил. Маш нарийхан — бараг мэдэгдэхгүй. */
+  text-shadow: 0 0 12px rgba(255,217,168, var(--sec-glow, 0));
+}
+.cd__unit{ display: block; margin-top: 10px; }
+.cd__passed{
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: var(--t-verse);
+}
+
+/* --- Хөтөлбөр --- */
+.pg{ position: relative; padding-left: 26px; }
+/* Зүүн талын босоо шугам — scroll-той хамт дээрээс доош зурагдана */
+.pg__line{
+  position: absolute;
+  left: 0; top: 4px; bottom: 4px;
+  width: 0;
+  border-left: var(--hair);
+  transform: scaleY(0);
+  transform-origin: 50% 0%;
+}
+.pg__item{
+  position: relative;
+  padding-block: 20px;
+  border-bottom: var(--hair);
+}
+.pg__item:last-child{ border-bottom: 0; }
+/* Замын зангилаа */
+.pg__item::before{
+  content: '';
+  position: absolute;
+  left: -28px; top: 30px;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--milk);
+  opacity: .45;
+}
+.pg__time{
+  display: block;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .18em;   /* шошгын .4em нь цагийг "1 1 : 0 0" болгож задалдаг */
+  margin-bottom: 8px;
+}
+.pg__note{ color: var(--muted); margin-top: 3px; }
+
+/* --- Байршил --- */
+.pl__place{
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--t-verse);
+}
+.pl__addr{ color: var(--muted); margin-top: 8px; }
+/* Цорын ганц дугуй хэлбэр — товч. Glow БАЙХГҮЙ, зөвхөн амбер хүрээ. */
+.pl__cta{
+  display: inline-block;
+  margin-top: 30px;
+  padding: 13px 26px;
+  border: var(--hair);
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: var(--t-label);
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  transition: color .5s var(--ease), border-color .5s var(--ease);
+}
+.pl__cta:hover,
+.pl__cta:focus-visible{
+  color: var(--amber);
+  border-color: rgba(233,164,92,.55);
+}
+
+/* --- Ёслолын ёс --- */
+.mn__item{
+  display: flex;
+  gap: 18px;
+  padding-block: 22px;
+  border-bottom: var(--hair);
+}
+.mn__item:last-child{ border-bottom: 0; }
+.mn__icon{
+  flex: 0 0 24px;
+  width: 24px; height: 24px;
+  margin-top: 2px;
+  color: var(--muted);
+}
+.mn__icon svg{
+  width: 100%; height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mn__text{ color: var(--muted); margin-top: 4px; }
+
+/* ============================================================
+   ҮЕ ШАТ 5 — ИРЦ, ТӨГСГӨЛ, ЗУРГИЙН ЦОМОГ
+   ============================================================ */
+
+/* --- Ирц + ерөөл --- */
+.rs__label{ display: block; }
+.rs__sub{ color: var(--muted); margin-top: 10px; margin-bottom: 40px; }
+
+.rs__field{ display: block; margin-bottom: 30px; }
+.rs__field > .label{ display: block; margin-bottom: 11px; }
+
+/* Хайрцаггүй, зөвхөн доод шугамтай. Хайрцаг нь хуудсыг маягт болгодог. */
+.rs__field input,
+.rs__field textarea{
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: var(--hair);
+  border-radius: 0;
+  color: var(--milk);
+  font: inherit;
+  padding: 9px 0;
+  transition: border-color .5s var(--ease);
+}
+.rs__field textarea{ resize: vertical; min-height: 88px; line-height: 1.8; }
+.rs__field input::placeholder,
+.rs__field textarea::placeholder{ color: var(--muted); }
+.rs__field input:focus,
+.rs__field textarea:focus{
+  border-bottom-color: rgba(233,164,92,.7);   /* идэвхтэй = гэрэл */
+}
+/* Хулганаар дарахад л outline-г авна. Гар товчлуураар ирсэн хүнд :focus-visible
+   хэвээр үлдэнэ — эс тэгвэл Tab-аар явахад хаана байгаагаа алдана. */
+.rs__field input:focus:not(:focus-visible),
+.rs__field textarea:focus:not(:focus-visible){ outline: none; }
+.rs__field--count input{ max-width: 116px; }
+
+.rs__attend{ border: 0; padding: 0; margin: 0 0 30px; }
+.rs__attend legend{ padding: 0; margin-bottom: 13px; }
+.rs__opts{ display: flex; gap: 10px; flex-wrap: wrap; }
+.rs__opt{ position: relative; }
+.rs__opt input{
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  margin: 0; opacity: 0; cursor: pointer;
+}
+.rs__opt span{
+  display: block;
+  padding: 11px 22px;
+  border: var(--hair);
+  border-radius: 999px;
+  font-size: var(--t-label);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color .5s var(--ease), border-color .5s var(--ease);
+}
+.rs__opt input:checked + span{
+  color: var(--amber);
+  border-color: rgba(233,164,92,.55);
+}
+.rs__opt input:focus-visible + span{ outline: 1px solid var(--amber); outline-offset: 3px; }
+
+.rs__submit{
+  margin-top: 6px;
+  padding: 13px 30px;
+  background: transparent;
+  border: var(--hair);
+  border-radius: 999px;
+  color: var(--milk);
+  font-family: var(--font-ui);
+  font-size: var(--t-label);
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color .5s var(--ease), border-color .5s var(--ease);
+}
+.rs__submit:hover:not(:disabled),
+.rs__submit:focus-visible{ color: var(--amber); border-color: rgba(233,164,92,.55); }
+.rs__submit:disabled{ opacity: .5; cursor: default; }
+
+.rs__error{ color: var(--amber); margin-top: 18px; font-size: var(--t-label); letter-spacing: .1em; }
+.rs__error[hidden]{ display: none; }
+
+.rs__sent-title{
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: var(--t-verse);
+}
+.rs__sent-note{ color: var(--muted); margin-top: 12px; }
+
+/* --- Төгсгөл — талын дээгүүрх нар --- */
+/* Сүүлийн дэлгэц бүтэн байх ёстой — ерөөл голд нь, нар доор нь */
+#closing{
+  position: relative;
+  text-align: center;
+  min-height: 78svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: clamp(150px, 32vh, 240px);
+  overflow: hidden;
+}
+/* Хуудасны цорын ганц дулаан төгсгөл. Нээх дэлгэцийн гурван glow-оос тусдаа,
+   санаатай нэмсэн дөрөв дэх дулаан мөч — анхны төлөвлөгөөний "хамгийн дулаан
+   цэг" нь ногоон тал дээр ийн буув. */
+.cl__horizon{
+  position: absolute;
+  left: 50%; bottom: -46px;
+  transform: translateX(-50%);
+  width: min(170vw, 900px);
+  height: 380px;
+  background: radial-gradient(ellipse 44% 50% at 50% 100%,
+      rgba(255,217,168,.46) 0%,
+      rgba(255,217,168,.20) 30%,
+      rgba(233,164,92,.08) 54%,
+      transparent 76%);
+  pointer-events: none;
+}
+.cl__inner{ position: relative; }
+.cl__line{
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: var(--verse-size, var(--t-verse));
+  line-height: 1.8;
+}
+.cl__sign{ display: block; margin-top: 28px; }
+
+/* --- Зургийн цомог — CONFIG.gallery дүүрэхэд өөрөө нээгдэнэ --- */
+.gl{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.gl img{
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+/* ============================================================
+   ХӨДӨЛГӨӨН УНТРААХ — нээх дэлгэц бүрэн алгасагдана
+   ============================================================ */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  #open{ display: none !important; }
+  .is-locked{ overflow: auto; height: auto; }
+}
+</style>
+</head>
+
+<body class="is-locked">
+
+<!-- ═══ 1. НЭЭХ ДЭЛГЭЦ (signature) ═══ -->
+<div id="open" role="button" tabindex="0" aria-label="Урилгыг нээх">
+  <div class="sky" id="sky"></div>
+  <div class="aura" id="aura"></div>
+
+  <svg class="thread" id="thread" viewBox="0 0 200 660" preserveAspectRatio="xMidYMin meet" aria-hidden="true">
+    <defs>
+      <!-- Утас дээрээ бараг үл үзэгдэх, доошоо гэрэлтэнэ.
+           userSpaceOnUse — эс тэгвэл дээд, доод path тус бүр градиентээ дахин
+           эхлүүлж, тасралтын цэг дээр дарахаас өмнө завсар харагдана. -->
+      <linearGradient id="gThread" gradientUnits="userSpaceOnUse" x1="100" y1="0" x2="100" y2="528">
+        <stop offset="0%"   stop-color="#FFD9A8" stop-opacity="0"/>
+        <stop offset="16%"  stop-color="#FFD9A8" stop-opacity=".16"/>
+        <stop offset="58%"  stop-color="#FFD9A8" stop-opacity=".44"/>
+        <stop offset="100%" stop-color="#FFD9A8" stop-opacity=".95"/>
+      </linearGradient>
+      <!-- Glow-ийн ганц жорын SVG хувилбар -->
+      <radialGradient id="gGlow">
+        <stop offset="0%"  stop-color="#FFD9A8" stop-opacity=".55"/>
+        <stop offset="38%" stop-color="#FFD9A8" stop-opacity=".14"/>
+        <stop offset="70%" stop-color="#FFD9A8" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <g id="thread-top">
+      <path d="M100 0 C 100.6 120, 99.4 232, 100 330"
+            fill="none" stroke="url(#gThread)" stroke-width="1.1" stroke-linecap="round"/>
+    </g>
+
+    <g id="thread-low">
+      <path d="M100 330 C 100.6 408, 99.6 470, 100 528"
+            fill="none" stroke="url(#gThread)" stroke-width="1.1" stroke-linecap="round"/>
+      <circle id="tip-halo" cx="100" cy="528" r="52" fill="url(#gGlow)"/>
+      <circle id="tip-dot"  cx="100" cy="528" r="2.1" fill="#FFD9A8"/>
+    </g>
+
+    <!-- Бутрах одод энд үүснэ -->
+    <g id="shards"></g>
+  </svg>
+
+  <div class="burst" id="burst"></div>
+  <div class="veil"  id="veil"></div>
+
+  <div class="open__foot">
+    <p class="open__line" id="open-line"></p>
+    <span class="label open__hint" id="open-hint"></span>
+  </div>
+</div>
+
+<main>
+  <!-- 2. Hero — агуулга нь CONFIG-оос JS-ээр бүрддэг -->
+  <section id="hero" class="section shell"></section>
+  <hr class="seam">
+
+  <!-- 3. Countdown — үе шат 4 -->
+  <section id="countdown" class="section shell" aria-label="Үлдсэн хугацаа"></section>
+  <hr class="seam">
+
+  <!-- 4. Хөтөлбөр — үе шат 4 -->
+  <section id="program" class="section shell" aria-label="Өдрийн зам"></section>
+  <hr class="seam">
+
+  <!-- 5. Байршил — үе шат 4 -->
+  <section id="place" class="section shell" aria-label="Уулзах газар"></section>
+  <hr class="seam">
+
+  <!-- 6. Ёслолын ёс — үе шат 4 -->
+  <section id="manners" class="section shell" aria-label="Ёслолын ёс"></section>
+  <hr class="seam">
+
+  <!-- 7. Ирц + ерөөл — үе шат 5 -->
+  <section id="rsvp" class="section shell" aria-label="Ирэхээ хэлээрэй"></section>
+  <hr class="seam">
+
+  <!-- 9. Зургийн цомог — CONFIG.gallery хоосон тул нуугдсан -->
+  <section id="gallery" class="section shell" aria-label="Зургийн цомог" hidden></section>
+
+  <!-- 8. Төгсгөл — үе шат 5 -->
+  <section id="closing" class="section shell" aria-label="Төгсгөл"></section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+/* ============================================================
+   CONFIG — хуудасны БҮХ текст энд. Өөр арга хэмжээнд зөвхөн
+   энэ объектыг солино, доорх кодыг хөндөхгүй.
+   ============================================================ */
+const CONFIG = {
+
+  ceremony: { title: 'Сэвлэг үргээх ёслол' },
+
+  child: { name: 'Монголхүү', age: '3 нас' },
+
+  parents: {
+    father: 'Харчу Сэцэн',
+    mother: 'Уранүйлст',
+    line:   'Харчу Сэцэн · Уранүйлст'
+  },
+
+  date: {
+    // Countdown үүнээс тоолно. Зочид цуглаж эхлэх цаг — хөтөлбөрийн эхний мөртэй нэг.
+    iso:     '2026-09-15T10:00:00+08:00',
+    display: '2026.09.15',
+    weekday: 'Мягмар гараг',
+    hour:    'Морин цаг (11:40 – 13:40)'
+  },
+
+  venue: {
+    city:  'Дархан хот',
+    place: 'Хүннү зоогийн газар',
+    hall:  'Тэнгэр танхим',
+    // Тодорхой координат байхгүй тул хайлтын холбоос. Байршил тодрох үед
+    // mapsUrl-д Google Maps-ийн шууд холбоосыг тавь.
+    mapsUrl: null,
+    mapsQuery: 'Хүннү зоогийн газар, Дархан'
+  },
+
+  // 1. Нээх дэлгэц
+  opening: {
+    line: 'Тэнгэрийн заадсаар нэгэн туяа бууж ирэв',
+    // hint: null болговол товчлол бүрэн алга болно
+    hint: 'ХҮРЭЭРЭЙ',
+    stars: { far: 96, mid: 58, near: 30 },   // 3 давхаргын одны тоо
+    shards: 30                               // тасралтаас бутрах одны тоо (24-36)
+  },
+
+  // 2. Hero
+  hero: {
+    above: 'ХӨХ ТЭНГЭРИЙН ДООР',
+    below: 'гурван насны босгыг алхаж байна',
+    verse: [
+      'Үүрийн туяа сэвлэгт нь тогтож',
+      'Уулын салхи хацрыг нь үнсэв',
+      'Сэвлэг үргээх энэ өдөр',
+      'Сэргэлэн хүү минь өсөн торниж байна'
+    ]
+  },
+
+  // 3. Countdown
+  countdown: {
+    label:  'ҮҮР ЦАЙХЫГ ХҮЛЭЭЖ БАЙНА',
+    passed: 'Тэр өглөө болов. Уулзацгаая.',
+    units:  { days: 'Хоног', hours: 'Цаг', minutes: 'Минут', seconds: 'Секунд' }
+  },
+
+  // 4. Хөтөлбөр
+  program: {
+    label: 'ӨДРИЙН ХӨТӨЛБӨР',
+    items: [
+      { time: '10:00 – 11:40', title: 'Зочид цуглах',
+        note: 'Цай уух' },
+      { time: '11:40 – 13:40', title: 'Сэвлэг үргээх ёслол',
+        note: 'Ахмад настан эхэлж хүрнэ. Сэвлэгт хүрсэн хүн ерөөлөө хэлж, гарын бэлгээ өгнө. Хүндэтгэлийн зоог барина' },
+      { time: '13:40 – 17:00', title: 'Үлдсэн зочид, хүүхдийн цаг',
+        note: 'Үсэнд хүрэх үргэлжилнэ. Хүүхдийн дуу, алиалагчдын үзүүлбэр' }
+    ]
+  },
+
+  // 5. Байршил
+  place: { label: 'УУЛЗАХ ГАЗАР', cta: 'Замаа харах' },
+
+  // 6. Ёслолын ёс — икон бүрийг SVG-ээр өөрсдөө зурна (үе шат 4)
+  manners: {
+    label: 'ЁСЛОЛЫН ЁС',
+    items: [
+      { title: 'Сэвлэгт хүрэх дараалал', text: 'Ахмад настан эхэлж хүрнэ. Дарааллыг ёслолын эзэн зохицуулна.' },
+      { title: 'Үнэртэй ус',             text: 'Хүүхдийн амьсгалыг бодож хэрэглэхгүй байхыг хүсье.' },
+      { title: 'Үндэсний хувцас',        text: 'Үндэсний хувцсаа өмсөж ирэхийг хүсье. Ёслолын өнгө нэмнэ.' },
+      { title: 'Гэрэл зураг',     text: 'Зурагчин ажиллана. Ёслолын мөчид урд талыг чөлөөтэй үлдээнэ үү.' }
+    ]
+  },
+
+  // 7. Ирц + ерөөл
+  rsvp: {
+    label:       'ИРЭХЭЭ ХЭЛЭЭРЭЙ',
+    sub:         'Ерөөлийн үгээ энд үлдээж болно',
+    placeholder: 'Монголхүүд хэлэх үгээ бичнэ үү…',
+    sentTitle:   'Таны үг хүрлээ.',
+    sentNote:    'Ирэх зам тань цагаан байх болтугай.',
+    fields: {
+      name: 'Нэр', attend: 'Ирэх эсэх', yes: 'Ирнэ', no: 'Ирэхгүй',
+      count: 'Хүний тоо', submit: 'Илгээх'
+    },
+    // Сүлжээ тасарвал. endpoint null үед хэзээ ч харагдахгүй.
+    errorText: 'Илгээж чадсангүй. Сүлжээгээ шалгаад дахин оролдоно уу.',
+    endpoint: null   // null бол зөвхөн дэлгэцэнд амжилттай гэж харуулна
+  },
+
+  // 8. Төгсгөл
+  closing: {
+    line:      'Таны ерөөл түүний замын гэрэл болно.',
+    signature: 'Харчу Сэцэн · Уранүйлст'
+  },
+
+  // 9. Зургийн цомог — хоосон бол секшн автоматаар нуугдана.
+  // Зураг нэмэх: { src: 'zurag/01.jpg', alt: 'Тайлбар' }
+  galleryLabel: 'ЗУРГИЙН ЦОМОГ',
+  gallery: []
+};
+
+/* Байршлын холбоосыг CONFIG-оос үүсгэнэ */
+CONFIG.venue.href = CONFIG.venue.mapsUrl
+  || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(CONFIG.venue.mapsQuery);
+
+/* Табны гарчгийг ч CONFIG хариуцна — эс тэгвэл нэр солиход энд хуучин нэр үлдэнэ.
+   АНХААРУУЛГА: Facebook, Messenger зэрэг холбоосын урьдчилсан харагдац JS
+   ажиллуулдаггүй тул <head> доторх бичвэрийг ГАРААР бас солих ёстой. */
+document.title = CONFIG.ceremony.title + ' · ' + CONFIG.child.name;
+const metaDesc = document.querySelector('meta[name="description"]');
+if (metaDesc){
+  metaDesc.content = [CONFIG.ceremony.title, CONFIG.child.name,
+    CONFIG.date.display + ', ' + CONFIG.venue.city].join(' · ');
+}
+
+
+/* ============================================================
+   ЕРӨНХИЙ НӨХЦӨЛ — бүх модуль үүнийг хуваалцана
+   ============================================================ */
+/* Браузер дахин ачаалахад өмнөх гүйлтийн байрлалыг сэргээдэг. Нээх дэлгэцтэй
+   хуудсанд энэ нь буруу — зочин үргэлж эхнээс нь эхлэх ёстой. */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+scrollTo(0, 0);
+
+const HAS_GSAP = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
+const REDUCED  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ANIMATED = HAS_GSAP && !REDUCED;
+if (HAS_GSAP) gsap.registerPlugin(ScrollTrigger);
+
+
+/* ============================================================
+   ҮЕ ШАТ 3 — HERO
+   Агуулгыг CONFIG-оос угсарч, нээх дэлгэц дуусахад ил гаргана.
+   ============================================================ */
+const HERO = (function(){
+  const el = document.getElementById('hero');
+  const H  = CONFIG.hero;
+  const nm = CONFIG.child.name;
+
+  /* Нэрийг үсэг тус бүрээр хуваана. SplitText төлбөртэй тул өөрөө.
+     Туяаны давхарга ч мөн ижил span-уудтай — эс тэгвэл кернинг зөрж,
+     туяа үсгүүдээсээ хазайна. */
+  const split = [...nm].map(ch => `<span>${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+
+  el.setAttribute('aria-label', CONFIG.ceremony.title + ' — ' + nm);
+  el.innerHTML =
+    `<p class="label hero__above rv">${H.above}</p>
+
+     <h1 class="name hero__name" aria-label="${nm}">
+       <span class="name__letters" aria-hidden="true">${split}</span>
+       <span class="name__sweep"   aria-hidden="true">${split}</span>
+     </h1>
+
+     <p class="hero__below rv">${H.below}</p>
+
+     <div class="hero__meta rv">
+       <span class="label">${CONFIG.child.age}</span>
+       <i class="hero__rule"></i>
+     </div>
+
+     <div class="hero__verse rv">
+       ${H.verse.map(l => `<p class="verse">${l}</p>`).join('')}
+     </div>
+
+     <div class="hero__date rv">
+       <p class="label">${CONFIG.date.weekday}</p>
+       <p class="hero__day">${CONFIG.date.display}</p>
+       <p class="hero__hour">${CONFIG.date.hour}</p>
+     </div>
+
+     <p class="label hero__parents rv">${CONFIG.parents.line}</p>`;
+
+  const letters = el.querySelectorAll('.name__letters span');
+  const sweep   = el.querySelector('.name__sweep');
+  const h1      = el.querySelector('.hero__name');
+  const host    = el.querySelector('.name__letters');
+
+  /* Нэрийг баганы өргөнд багтаана. clamp() дангаараа хүрэлцэхгүй — нэрийн урт
+     CONFIG-оос хамаарна. Шрифт ачаалагдсаны дараа заавал дахин хэмжинэ,
+     эс тэгвэл нөөц шрифтийн өргөнөөр тооцчихно. */
+  function fit(){
+    h1.style.fontSize = '';
+    const avail = h1.clientWidth;
+    const natural = host.getBoundingClientRect().width;
+    if (natural > avail && avail > 0){
+      const cur = parseFloat(getComputedStyle(h1).fontSize);
+      h1.style.fontSize = (cur * (avail / natural) * .995).toFixed(2) + 'px';
+    }
+  }
+  /* Шүлгийн мөр таслагдвал шүлэг байхаа болино. clamp() дангаараа хүрэлцэхгүй —
+     мөрийн урт CONFIG-оос хамаарна. Хамгийн урт мөрөөр нь хэмжиж, зөвхөн
+     шаардлагатай үед л багасгана. */
+  const verseBox = el.querySelector('.hero__verse');
+  function fitVerse(){
+    verseBox.style.removeProperty('--verse-size');
+    const lines = verseBox.querySelectorAll('.verse');
+    if (!lines.length) return;
+    const avail = verseBox.clientWidth - parseFloat(getComputedStyle(verseBox).paddingLeft);
+    /* Range-ээр хэмжинэ. scrollWidth нь блок элементэд савныхаа өргөнийг
+       буцаадаг тул текстийн жинхэнэ уртыг хэлж чадахгүй. */
+    verseBox.style.whiteSpace = 'nowrap';
+    const range = document.createRange();
+    let widest = 0;
+    lines.forEach(p => {
+      range.selectNodeContents(p);
+      widest = Math.max(widest, range.getBoundingClientRect().width);
+    });
+    range.detach && range.detach();
+    verseBox.style.whiteSpace = '';
+    if (widest > avail && avail > 0){
+      const cur = parseFloat(getComputedStyle(lines[0]).fontSize);
+      verseBox.style.setProperty('--verse-size',
+        (cur * (avail / widest) * .99).toFixed(2) + 'px');
+    }
+  }
+
+  function fitAll(){ fit(); fitVerse(); }
+
+  fitAll();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+  let fitTimer;
+  addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fitAll, 120); });
+
+  /* Нээх дэлгэцээс өмнө үсгүүд бүдгэрсэн байдалд хүлээнэ */
+  if (ANIMATED){
+    gsap.set(letters, { opacity: 0, y: 26, filter: 'blur(8px)' });
+  }
+
+  function enter(animated){
+    if (!animated){
+      el.querySelectorAll('.rv').forEach(n => { n.style.opacity = 1; });
+      if (HAS_GSAP) gsap.set(letters, { opacity: 1, y: 0, filter: 'none' });
+      return;
+    }
+
+    const tl = gsap.timeline();
+
+    /* Үсэг бүр blur-ээс гарч ирнэ. 0.07 сек зөрүү. */
+    gsap.set(letters, { willChange: 'transform, filter, opacity' });
+    tl.to(letters, {
+      opacity: 1, y: 0, filter: 'blur(0px)',
+      duration: 1.2, ease: 'power4.out', stagger: .07,
+      onComplete(){ gsap.set(letters, { willChange: 'auto', filter: 'none' }); }
+    }, 0);
+
+    /* Бусад блокууд — ижил хэл: opacity + translateY + blur, 1.2 сек, 0.12 зөрүү */
+    tl.fromTo(el.querySelectorAll('.rv'),
+      { opacity: 0, y: 26, filter: 'blur(8px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 1.2, ease: 'power4.out', stagger: .12,
+        onComplete(){ gsap.set(el.querySelectorAll('.rv'), { filter: 'none' }); } }, .25);
+
+    /* Нэр бүрэн гарсны дараа амбер туяа НЭГ УДАА гулсана. Дахин давтахгүй. */
+    const last = (letters.length - 1) * .07 + 1.2;
+    tl.fromTo(sweep,
+      { backgroundPosition: '140% 0' },
+      { backgroundPosition: '-40% 0', duration: 1.4, ease: 'power2.inOut' }, last * .78);
+
+    return tl;
+  }
+
+  return { enter };
+})();
+
+
+/* ============================================================
+   ҮЕ ШАТ 4 — COUNTDOWN, ХӨТӨЛБӨР, БАЙРШИЛ, ЁСЛОЛЫН ЁС
+   ============================================================ */
+
+/* Иконуудыг өөрсдөө зурна — icon сан татахгүй. 24x24, зөвхөн нимгэн шугам. */
+const ICONS = {
+  /* Хайч */
+  scissors:
+    `<circle cx="6" cy="17.8" r="2.5"/><circle cx="18" cy="17.8" r="2.5"/>
+     <path d="M7.7 15.9 19 3.8"/><path d="M16.3 15.9 5 3.8"/>`,
+  /* Үнэртэй усны шил */
+  scent:
+    `<path d="M8.6 8.8h6.8v8.7a2.5 2.5 0 0 1-2.5 2.5h-1.8a2.5 2.5 0 0 1-2.5-2.5z"/>
+     <path d="M10.6 8.8V6.4h2.8v2.4"/><path d="M11 6.4V4.4h2v2"/>
+     <circle cx="17.9" cy="5.3" r=".55"/><circle cx="19.5" cy="7.2" r=".55"/>`,
+  /* Дээл — ханцуй, давхарласан энгэр, бүс.
+     Ханцуйны эргэлтгүйгээр энэ нь хувцас биш хайрцаг шиг уншигддаг. */
+  deel:
+    `<path d="M9 3.8 5.3 6.1 6.7 9.7 8.2 8.9V20.2h7.6V8.9l1.5.8 1.4-3.6L15 3.8z"/>
+     <path d="M9 3.8 12 6.5 15 3.8"/>
+     <path d="M12 6.5 15.8 10.8"/>
+     <path d="M8.2 13.4h7.6"/>`,
+  /* Гэрэл зургийн аппарат */
+  camera:
+    `<path d="M4.2 8.6h3.1l1.4-2.1h6.6l1.4 2.1h3.1V19H4.2z"/>
+     <circle cx="12" cy="13.5" r="3.2"/>`
+};
+
+const SECTIONS = (function(){
+
+  /* ---------- 3. Countdown ---------- */
+  const cdEl = document.getElementById('countdown');
+  const C = CONFIG.countdown;
+  const target = new Date(CONFIG.date.iso).getTime();
+  let cdTick = null;
+
+  function buildCountdown(){
+    if (isNaN(target)){ cdEl.remove(); return; }   /* CONFIG.date.iso эвдэрсэн бол секшн байхгүй */
+
+    const units = [['days', C.units.days], ['hours', C.units.hours],
+                   ['minutes', C.units.minutes], ['seconds', C.units.seconds]];
+
+    cdEl.innerHTML =
+      `<span class="label sec__label rv">${C.label}</span>
+       <div class="cd rv">
+         ${units.map(([k, name]) =>
+           `<div class="cd__cell">
+              <span class="num cd__num" data-u="${k}">00</span>
+              <span class="label cd__unit">${name}</span>
+            </div>`).join('')}
+       </div>`;
+
+    const out = {};
+    units.forEach(([k]) => { out[k] = cdEl.querySelector(`[data-u="${k}"]`); });
+    const secEl = out.seconds;
+    let lastSec = -1;
+
+    function pad(n){ return String(n).padStart(2, '0'); }
+
+    function render(){
+      const left = target - Date.now();
+
+      if (left <= 0){
+        cdEl.innerHTML = `<span class="label sec__label">${C.label}</span>
+                          <p class="cd__passed">${C.passed}</p>`;
+        clearInterval(cdTick);
+        return;
+      }
+
+      const s = Math.floor(left / 1000);
+      out.days.textContent    = pad(Math.floor(s / 86400));
+      out.hours.textContent   = pad(Math.floor(s % 86400 / 3600));
+      out.minutes.textContent = pad(Math.floor(s % 3600 / 60));
+      const sec = s % 60;
+      out.seconds.textContent = pad(sec);
+
+      /* Секунд солигдох бүрт эрчим тэсэрч, 0.4 секундэд унтарна */
+      if (sec !== lastSec){
+        lastSec = sec;
+        if (ANIMATED) gsap.fromTo(secEl, { '--sec-glow': .5 },
+                                         { '--sec-glow': 0, duration: .4, ease: 'power2.out' });
+      }
+    }
+
+    render();
+    /* Date-аас тооцож байгаа тул хуримтлагдсан хоцролт үүсэхгүй */
+    cdTick = setInterval(render, 1000);
+  }
+
+  /* ---------- 4. Хөтөлбөр ---------- */
+  function buildProgram(){
+    const el = document.getElementById('program');
+    const P = CONFIG.program;
+    el.innerHTML =
+      `<span class="label sec__label rv">${P.label}</span>
+       <div class="pg rv">
+         <i class="pg__line" aria-hidden="true"></i>
+         <ol>
+           ${P.items.map(it =>
+             `<li class="pg__item">
+                <span class="label pg__time">${it.time}</span>
+                <p class="pg__title">${it.title}</p>
+                <p class="pg__note">${it.note}</p>
+              </li>`).join('')}
+         </ol>
+       </div>`;
+  }
+
+  /* ---------- 5. Байршил ---------- */
+  function buildPlace(){
+    const el = document.getElementById('place');
+    const V = CONFIG.venue;
+    el.innerHTML =
+      `<span class="label sec__label rv">${CONFIG.place.label}</span>
+       <p class="pl__place rv">${V.place}</p>
+       <p class="pl__addr rv">${V.city} · ${V.hall}</p>
+       <a class="pl__cta rv" href="${V.href}" target="_blank" rel="noopener noreferrer">${CONFIG.place.cta}</a>`;
+  }
+
+  /* ---------- 6. Ёслолын ёс ---------- */
+  function buildManners(){
+    const el = document.getElementById('manners');
+    const M = CONFIG.manners;
+    const keys = ['scissors', 'scent', 'deel', 'camera'];
+    el.innerHTML =
+      `<span class="label sec__label rv">${M.label}</span>
+       ${M.items.map((it, i) => {
+         /* Икон нь мөрийн дугаараар таардаг. CONFIG-д 4-өөс олон санамж
+            бичвэл икон дуусна — тэр үед хоосон дөрвөлжин үлдээхгүй, мөрийг
+            бүхэлд нь текстээр өгнө. */
+         const icon = ICONS[keys[i]];
+         return `<div class="mn__item rv">
+            ${icon ? `<span class="mn__icon" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span>` : ''}
+            <div>
+              <p class="mn__title">${it.title}</p>
+              <p class="mn__text">${it.text}</p>
+            </div>
+          </div>`;
+       }).join('')}`;
+  }
+
+  /* ---------- 7. Ирц + ерөөл ---------- */
+  function buildRsvp(){
+    const el = document.getElementById('rsvp');
+    const R = CONFIG.rsvp;
+    const F = R.fields;
+
+    el.innerHTML =
+      `<span class="label rs__label rv">${R.label}</span>
+       <p class="rs__sub rv">${R.sub}</p>
+
+       <form class="rs__form rv" novalidate>
+         <label class="rs__field">
+           <span class="label">${F.name}</span>
+           <input type="text" name="name" autocomplete="name" required>
+         </label>
+
+         <fieldset class="rs__attend">
+           <legend class="label">${F.attend}</legend>
+           <div class="rs__opts">
+             <label class="rs__opt"><input type="radio" name="attend" value="yes" required><span>${F.yes}</span></label>
+             <label class="rs__opt"><input type="radio" name="attend" value="no"><span>${F.no}</span></label>
+           </div>
+         </fieldset>
+
+         <label class="rs__field rs__field--count">
+           <span class="label">${F.count}</span>
+           <input type="number" name="count" value="1" min="1" max="30" step="1" inputmode="numeric">
+         </label>
+
+         <label class="rs__field">
+           <textarea name="wish" rows="3" aria-label="${R.sub}" placeholder="${R.placeholder}"></textarea>
+         </label>
+
+         <button class="rs__submit" type="submit">${F.submit}</button>
+         <p class="rs__error" role="alert" hidden></p>
+       </form>`;
+
+    const form = el.querySelector('.rs__form');
+    const btn  = el.querySelector('.rs__submit');
+    const err  = el.querySelector('.rs__error');
+
+    function showSent(){
+      const box = document.createElement('div');
+      box.innerHTML = `<p class="rs__sent-title">${R.sentTitle}</p>
+                       <p class="rs__sent-note">${R.sentNote}</p>`;
+      form.replaceWith(box);
+      if (ANIMATED){
+        gsap.fromTo(box.children,
+          { opacity: 0, y: 26, filter: 'blur(8px)' },
+          { opacity: 1, y: 0, filter: 'blur(0px)',
+            duration: 1.2, ease: 'power4.out', stagger: .12,
+            onComplete(){ gsap.set(box.children, { filter: 'none' }); } });
+      }
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      err.hidden = true;
+
+      /* novalidate тавьсан нь баталгаажуулалтыг унтраахын тулд биш — браузерын
+         бөмбөлөг гарахаас өмнө өөрсдөө шалгаж, буруу талбар руу нь аваачихын тулд. */
+      const bad = form.querySelector(':invalid');
+      if (bad){ bad.focus(); form.reportValidity(); return; }
+
+      const data = Object.fromEntries(new FormData(form).entries());
+      btn.disabled = true;
+
+      try {
+        if (R.endpoint){
+          const res = await fetch(R.endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          if (!res.ok) throw new Error(res.status);
+        }
+        showSent();
+      } catch (_){
+        btn.disabled = false;
+        err.textContent = R.errorText;
+        err.hidden = false;
+      }
+    });
+  }
+
+  /* ---------- 8. Төгсгөл ---------- */
+  function buildClosing(){
+    const el = document.getElementById('closing');
+    const C2 = CONFIG.closing;
+    el.innerHTML =
+      `<div class="cl__horizon" aria-hidden="true"></div>
+       <div class="cl__inner">
+         <p class="cl__line rv">${C2.line}</p>
+         <span class="label cl__sign rv">${C2.signature}</span>
+       </div>`;
+  }
+
+  /* ---------- 9. Зургийн цомог ---------- */
+  function buildGallery(){
+    const el = document.getElementById('gallery');
+    const list = CONFIG.gallery || [];
+    el.hidden = list.length === 0;      /* хоосон бол секшн байхгүй мэт */
+    if (el.hidden) return;
+
+    el.innerHTML =
+      `<span class="label sec__label rv">${CONFIG.galleryLabel}</span>
+       <div class="gl rv">
+         ${list.map(g => {
+           const src = typeof g === 'string' ? g : g.src;
+           const alt = typeof g === 'string' ? '' : (g.alt || '');
+           return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`;
+         }).join('')}
+       </div>`;
+  }
+
+  buildCountdown();
+  buildProgram();
+  buildPlace();
+  buildManners();
+  buildRsvp();
+  buildClosing();
+  buildGallery();
+
+  return {};
+})();
+
+
+/* ============================================================
+   ҮЕ ШАТ 3 — SCROLL: дэвсгэрийн өнгө ба заадсууд
+   ============================================================ */
+function initScroll(){
+  /* Хөдөлгөөнгүй горимд бүх зүйл шууд эцсийн байдалдаа */
+  if (!ANIMATED){
+    document.querySelectorAll('.rv').forEach(n => { n.style.opacity = 1; });
+    document.querySelectorAll('.seam').forEach(n => { n.style.transform = 'scaleX(1)'; });
+    document.querySelectorAll('.pg__line').forEach(n => { n.style.transform = 'scaleY(1)'; });
+    return;
+  }
+
+  /* Өглөөний тэнгэрээс цэнхэр тэнгэр, тэндээсээ ногоон тал руу. Хэрэглэгч
+     ухамсартайгаар анзаарахгүй, гэхдээ мэдэрнэ. Өнгийг токеноос уншиж байгаа
+     тул :root дээр сольход энэ өөрөө дагана. */
+  const cs = getComputedStyle(document.documentElement);
+  const stops = ['--day', '--steppe'].map(v => cs.getPropertyValue(v).trim());
+
+  const tl = gsap.timeline({
+    scrollTrigger: { trigger: document.documentElement, start: 'top top', end: 'bottom bottom', scrub: 1 }
+  });
+  stops.forEach(c => tl.to(document.body, { backgroundColor: c, ease: 'none', duration: 1 }));
+
+  /* Заадас — scroll дотогш орох үед өргөсөнө */
+  gsap.utils.toArray('.seam').forEach(s => {
+    gsap.fromTo(s, { scaleX: .6 }, {
+      scaleX: 1, ease: 'none',
+      scrollTrigger: { trigger: s, start: 'top 94%', end: 'top 64%', scrub: .6 }
+    });
+  });
+
+  /* Секшн бүр дотогш орох үед агуулга нь Hero-тэй ижил хэлээр илэрнэ:
+     opacity + translateY + blur, 1.2 сек, 0.12 зөрүү. Нэг л удаа. */
+  gsap.utils.toArray('main .section').forEach(sec => {
+    if (sec.id === 'hero') return;                 /* Hero нээлтийн дараа өөрөө асна */
+    const items = sec.querySelectorAll('.rv');
+    if (!items.length) return;
+    gsap.fromTo(items,
+      { opacity: 0, y: 26, filter: 'blur(8px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 1.2, ease: 'power4.out', stagger: .12,
+        scrollTrigger: { trigger: sec, start: 'top 80%', once: true },
+        onComplete(){ gsap.set(items, { filter: 'none' }); } });
+  });
+
+  /* Хөтөлбөрийн зүүн шугам дээрээс доош зурагдана */
+  const pgLine = document.querySelector('.pg__line');
+  if (pgLine){
+    gsap.to(pgLine, {
+      scaleY: 1, ease: 'none',
+      scrollTrigger: { trigger: '.pg', start: 'top 82%', end: 'bottom 72%', scrub: .6 }
+    });
+  }
+}
+
+
+/* ============================================================
+   ҮЕ ШАТ 2 — НЭЭХ ДЭЛГЭЦ
+   ============================================================ */
+(function opening(){
+  const openEl = document.getElementById('open');
+  const reduced = REDUCED;
+  const hasGsap = HAS_GSAP;
+  const R = hasGsap ? gsap.utils.random : null;
+
+  /* Заавал энд зарлана. Доор, unlock()-ийн дэргэд зарлавал хөдөлгөөнгүй горимын
+     эрт буцалт нь TDZ-д унаж, хуудас хоосон үлддэг. */
+  let entered = false;
+
+  /* Хөдөлгөөн унтраасан, эсвэл GSAP ирээгүй бол нээх дэлгэцгүйгээр шууд урилга руу.
+     CSS-ийн media query-гээс гадна hidden-ийг ч тавьж байгаа шалтгаан: GSAP
+     ачаалагдаагүй тохиолдолд media query дангаараа дэлгэцийг арилгахгүй. */
+  const MORNING = getComputedStyle(document.documentElement).getPropertyValue('--morning').trim();
+
+  if (reduced || !hasGsap){
+    openEl.hidden = true;
+    document.body.style.backgroundColor = MORNING;   /* шууд өглөө */
+    unlock();
+    return;
+  }
+
+  document.getElementById('open-line').textContent = CONFIG.opening.line;
+  const hintEl = document.getElementById('open-hint');
+  if (CONFIG.opening.hint) hintEl.textContent = CONFIG.opening.hint;
+  else hintEl.remove();
+
+  /* ---------- Одтой тэнгэр: 3 давхарга ----------
+     Давхарга бүр гаднаасаа өөрөө хөвж, дотроосоо хурууг дагана. */
+  const sky = document.getElementById('sky');
+  const layers = [
+    { n: CONFIG.opening.stars.far,  r: [.6, 1.1], o: [.10, .34], depth: 5,  drift: [22, 68] },
+    { n: CONFIG.opening.stars.mid,  r: [.9, 1.6], o: [.20, .52], depth: 13, drift: [30, 54] },
+    { n: CONFIG.opening.stars.near, r: [1.3, 2.3], o: [.34, .78], depth: 26, drift: [40, 44] }
+  ];
+  const par = [];   // хурууны parallax бичих дотоод элементүүд
+
+  layers.forEach((L, i) => {
+    const drift = document.createElement('div');
+    drift.className = 'sky__drift';
+    const inner = document.createElement('div');
+    inner.className = 'sky__par';
+
+    let html = '';
+    for (let s = 0; s < L.n; s++){
+      const size = R(L.r[0], L.r[1]).toFixed(2);
+      // 10-аас нэг нь л тод — glow зөвхөн тэдэнд
+      const hi = (s % 10 === 0);
+      html += `<span class="star${hi ? ' star--hi' : ''}" style="`
+            + `left:${R(0,100).toFixed(2)}%;top:${R(0,100).toFixed(2)}%;`
+            + `width:${size}px;height:${size}px;`
+            + `opacity:${R(L.o[0], L.o[1]).toFixed(2)};`
+            + (hi ? `animation-delay:${R(0,5.5).toFixed(2)}s;` : '')
+            + `"></span>`;
+    }
+    inner.innerHTML = html;
+    drift.appendChild(inner);
+    sky.appendChild(drift);
+    par.push({ el: inner, depth: L.depth });
+
+    gsap.set([drift, inner], { willChange: 'transform' });
+    gsap.to(drift, {
+      x: R(-26, 26), y: R(-16, 16),
+      duration: L.drift[1], repeat: -1, yoyo: true, ease: 'sine.inOut'
+    });
+  });
+
+  /* ---------- Утас удаан амьсгална ---------- */
+  const threadTop = document.getElementById('thread-top');
+  const threadLow = document.getElementById('thread-low');
+  const tipHalo   = document.getElementById('tip-halo');
+  const tipDot    = document.getElementById('tip-dot');
+
+  gsap.to([threadTop, threadLow], {
+    opacity: .75, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut'
+  });
+  gsap.fromTo(tipHalo, { opacity: .8 }, {
+    opacity: 1, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut'
+  });
+
+  /* ---------- Хуруу дагах туяа ----------
+     quickTo нь бичих бүрт tween үүсгэхгүй тул утсан дээр хямд. */
+  const aura = document.getElementById('aura');
+  const auraX = gsap.quickTo(aura, 'x', { duration: .9, ease: 'power3.out' });
+  const auraY = gsap.quickTo(aura, 'y', { duration: .9, ease: 'power3.out' });
+  const haloS = gsap.quickTo(tipHalo, 'scale', { duration: .7, ease: 'power2.out' });
+  const parX  = par.map(p => gsap.quickTo(p.el, 'x', { duration: 1.1, ease: 'power3.out' }));
+  const parY  = par.map(p => gsap.quickTo(p.el, 'y', { duration: 1.1, ease: 'power3.out' }));
+
+  gsap.set(aura, { x: innerWidth / 2, y: innerHeight * .55 });
+  gsap.set(tipHalo, { transformOrigin: '100px 528px' });
+
+  let auraShown = false;
+  function onMove(x, y){
+    if (!auraShown){ auraShown = true; gsap.to(aura, { opacity: .5, duration: 1.1, ease: 'power2.out' }); }
+    auraX(x); auraY(y);
+
+    const nx = (x / innerWidth  - .5) * 2;
+    const ny = (y / innerHeight - .5) * 2;
+    par.forEach((p, i) => { parX[i](-nx * p.depth); parY[i](-ny * p.depth); });
+
+    // Утас руу ойртох тусам үзүүр нь бага зэрэг тэлнэ — "амьд" мэдрэмж
+    const near = 1 - Math.min(Math.abs(x - innerWidth / 2) / (innerWidth * .5), 1);
+    haloS(1 + near * .22);
+  }
+  openEl.addEventListener('pointermove', e => onMove(e.clientX, e.clientY), { passive: true });
+  openEl.addEventListener('touchmove', e => {
+    const t = e.touches[0]; if (t) onMove(t.clientX, t.clientY);
+  }, { passive: true });
+
+  /* ---------- Бутрах одод ----------
+     Утасны доод хэсгийн дагуу тарааж байрлуулна. Бүгд ижил хөдөлвөл хиймэл
+     харагдана — тул чиглэл, хугацаа, саатал бүрийг санамсаргүй өгнө. */
+  const shardsG = document.getElementById('shards');
+  const shards = [];
+  for (let i = 0; i < CONFIG.opening.shards; i++){
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    const t = i / (CONFIG.opening.shards - 1);           // 0 = тасралт, 1 = үзүүр
+    c.setAttribute('cx', (100 + R(-2.4, 2.4)).toFixed(2));
+    c.setAttribute('cy', (332 + t * 196 + R(-6, 6)).toFixed(2));
+    c.setAttribute('r',  R(.7, 1.9).toFixed(2));
+    c.setAttribute('fill', '#FFD9A8');
+    c.setAttribute('opacity', '0');
+    shardsG.appendChild(c);
+    shards.push(c);
+  }
+
+  /* ---------- Нээх ---------- */
+  const burst = document.getElementById('burst');
+  const veil  = document.getElementById('veil');
+  let opened = false;
+
+  function open(){
+    if (opened) return;
+    opened = true;
+    openEl.style.cursor = 'default';
+
+    /* Тасралтын цэгийн бодит дэлгэцийн байрлалыг SVG-ээс авна */
+    const box = document.getElementById('thread').getBoundingClientRect();
+    const bx = box.left + box.width * (100 / 200);
+    const by = box.top  + box.height * (330 / 660);
+    gsap.set(burst, { x: bx, y: by });
+    veil.style.setProperty('--vx', (bx / innerWidth  * 100).toFixed(1) + '%');
+    veil.style.setProperty('--vy', (by / innerHeight * 100).toFixed(1) + '%');
+
+    /* Амьсгалын мөнхийн tween-үүдийг зогсооно — эс тэгвэл opacity зөрчилдөнө */
+    gsap.killTweensOf([threadTop, threadLow, tipHalo]);
+    gsap.set([threadTop, threadLow, tipHalo], { opacity: 1 });
+
+    const tl = gsap.timeline({ onComplete: finish });
+
+    /* 0.00-0.14 — утас чангарна */
+    tl.to([threadTop, threadLow], { scaleY: 1.012, transformOrigin: '50% 0%', duration: .14, ease: 'power2.in' }, 0);
+
+    /* 0.14 — тасарч, дэлбэрэлт. Оргил 0.35 сек. */
+    tl.fromTo(burst,
+        { opacity: 0, scale: .15 },
+        { opacity: 1, scale: 1, duration: .35, ease: 'power3.out' }, .14)
+      .to(burst, { opacity: 0, scale: 1.55, duration: .76, ease: 'power2.out' }, .49);
+
+    /* Доод хэсэг алга болж, оронд нь одод гарна */
+    tl.to(threadLow, { opacity: 0, duration: .18, ease: 'power1.in' }, .14);
+
+    /* Дээд хэсэг дээшээ ухарна */
+    tl.to(threadTop, {
+      y: -18, opacity: 0, duration: 1.0, ease: 'power3.out'
+    }, .2);
+
+    /* 0.18 — одод ДЭЭШЭЭ хөвж тэнгэр рүү тарна (хүүгийн ирээдүйн жилүүд) */
+    shards.forEach(c => {
+      tl.fromTo(c,
+        { opacity: 0, x: 0, y: 0, scale: 1 },
+        { opacity: 1, duration: .18, ease: 'power1.out' }, .18 + R(0, .22));
+      tl.to(c, {
+        x: R(-92, 92),
+        y: R(-300, -620),
+        scale: R(.35, 1.15),
+        opacity: 0,
+        duration: R(1.5, 2.4),
+        ease: 'power2.out'
+      }, .18 + R(0, .45));
+    });
+
+    /* Тасралтын гэрэл цаад тэнгэрийг цайруулна — од хүрснээр өглөө болов.
+       Хөшиг ухрахад ард нь шөнө биш, өглөөний тэнгэр үлдэнэ. */
+    tl.to(document.body, { backgroundColor: MORNING, duration: 1.6, ease: 'power2.inOut' }, 1.4);
+
+    /* Гэрэлд уусах. Хөшиг 0.9 сек хүлээнэ — тэр хүртэл одод цэвэр харагдана,
+       энэ бол өгүүлэмжийн гол мөч. */
+    tl.to(veil, { opacity: .74, duration: .6, ease: 'power2.out' }, .9)
+      .to(['.open__foot', '#sky', '#aura'], { opacity: 0, duration: .6, ease: 'power2.out' }, .95)
+      .to(veil, { opacity: 0, duration: 1.15, ease: 'power2.inOut' }, 1.65);
+
+    /* Гэрэл ухрахад доор нь урилга үлдэнэ. Нийт ~3.35 сек. */
+    tl.to(openEl, { opacity: 0, duration: .85, ease: 'power2.inOut' }, 2.5);
+  }
+
+  function finish(){
+    openEl.hidden = true;
+    gsap.set(['.sky__drift', '.sky__par'], { willChange: 'auto' });
+    unlock();
+  }
+
+  openEl.addEventListener('click', open);
+  openEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
+  });
+
+  /* Түгжээ тайлагдах мөч бол урилга эхлэх мөч. Аль ч замаар ирсэн — нээх
+     дэлгэц үзсэн ч, алгассан ч — Hero нэг л энд асна. */
+  function unlock(){
+    document.documentElement.classList.remove('is-locked');
+    document.body.classList.remove('is-locked');
+    if (entered) return;
+    entered = true;
+
+    /* Түгжээтэй үед хуудас гүйдэггүй тул браузер гүйлтийн байрлал сэргээхээ
+       хойшлуулдаг — түгжээ тайлмагц буцаад дунд хэсэг рүү үсэрдэг. Дахин тэглэнэ. */
+    scrollTo(0, 0);
+
+    HERO.enter(ANIMATED);
+
+    if (!ANIMATED){
+      /* Хөдөлгөөнгүй горимд хүлээх шалтгаан байхгүй — шууд эцсийн байдалдаа */
+      initScroll();
+      return;
+    }
+
+    /* Нэг кадр хүлээж байж ScrollTrigger үүсгэнэ. Түгжээтэй үед body-гийн
+       өндөр нь дэлгэцтэй тэнцүү байсан тул тэр хэмжилтээр үүсгэвэл гүйх зай
+       тэг гэж үзээд аяллын ТӨГСГӨЛИЙН өнгийг шууд тавьчихдаг. */
+    requestAnimationFrame(() => {
+      initScroll();
+      ScrollTrigger.refresh();
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
