@@ -14,7 +14,7 @@
      (U+0460-052F — ө, ү энд байдаг) subset-тэй нь шалгагдсан. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;1,300&family=Onest:wght@300;400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;0,400;1,300;1,400&family=Onest:wght@400;500&display=swap">
 
 <style>
 /* ============================================================
@@ -50,7 +50,7 @@
   /* Шүлгийн мөр таслагдвал шүлэг байхаа болино — нарийн дэлгэцэд бага зэрэг буурна */
   --t-verse: clamp(1.02rem, 4.9vw, 1.25rem);
   --t-body:  .95rem;
-  --t-label: .63rem;
+  --t-label: .75rem;   /* ≥12px — өвөг настай зочид (#101-5) */
 
   /* Хөдөлгөөний хэл — ганц easing, урт хугацаа */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -86,7 +86,7 @@ body{
   background: var(--bg);
   color: var(--milk);
   font-family: var(--font-ui);
-  font-weight: 300;
+  font-weight: 400;
   font-size: var(--t-body);
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
@@ -129,14 +129,14 @@ a{ color: inherit; }
 }
 .name{
   font-family: var(--font-display);
-  font-weight: 200;
+  font-weight: 300;
   font-size: var(--t-name);
   letter-spacing: -.02em;
   line-height: .95;
 }
 .verse{
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   font-style: italic;
   /* --verse-size-г JS зөвхөн мөр багтахгүй үед тавина */
   font-size: var(--verse-size, var(--t-verse));
@@ -144,7 +144,7 @@ a{ color: inherit; }
 }
 .num{
   font-family: var(--font-display);
-  font-weight: 200;
+  font-weight: 300;
   font-size: var(--t-num);
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -275,7 +275,7 @@ a{ color: inherit; }
 }
 .open__line{
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   font-style: italic;
   font-size: 1.02rem;
   line-height: 1.6;
@@ -365,7 +365,7 @@ a{ color: inherit; }
 .hero__date{ margin-top: 50px; }
 .hero__day{
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   font-size: var(--t-verse);
   margin-top: 8px;
 }
@@ -398,7 +398,7 @@ a{ color: inherit; }
 .cd__unit{ display: block; margin-top: 10px; }
 .cd__passed{
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   font-style: italic;
   font-size: var(--t-verse);
 }
@@ -441,7 +441,7 @@ a{ color: inherit; }
 /* --- Байршил --- */
 .pl__place{
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   font-size: var(--t-verse);
 }
 .pl__addr{ color: var(--muted); margin-top: 8px; }
@@ -574,7 +574,7 @@ a{ color: inherit; }
 
 .rs__sent-title{
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   font-style: italic;
   font-size: var(--t-verse);
 }
@@ -611,7 +611,7 @@ a{ color: inherit; }
 .cl__inner{ position: relative; }
 .cl__line{
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   font-style: italic;
   font-size: var(--verse-size, var(--t-verse));
   line-height: 1.8;
@@ -845,8 +845,45 @@ const CONFIG = {
   // 9. Зургийн цомог — хоосон бол секшн автоматаар нуугдана.
   // Зураг нэмэх: { src: 'zurag/01.jpg', alt: 'Тайлбар' }
   galleryLabel: 'ЗУРГИЙН ЦОМОГ',
-  gallery: []
+  gallery: [],
+
+  // 10. Жишээ горим. on:true → огноо өнөөдрөөс daysAhead хоногийн дараа,
+  // дээд талд «ЖИШЭЭ» тэмдэг (portfolio-гийн жишээ хэзээ ч «өнгөрөхгүй»).
+  // ЖИНХЭНЭ урилгад on:false — дээрх date хэвээр ажиллана.
+  demo: { on: true, daysAhead: 30, label: 'ЖИШЭЭ' }
 };
+
+/* Жишээ огноо ба «Өөрийн нэрээр үзэх» (BACKLOG #101, #102 — 2026-10-10).
+   URL: ?n1=Тэмүүлэн&n2=Бат · Сараа&d=2026-12-20 — n1 хүүхдийн нэр, n2 эцэг эх.
+   Нэр innerHTML-ээр ордог тул < > " ' ` & тэмдэгтийг хасаж, 32 тэмдэгтээр хязгаарлана. */
+(function applyDemo(C) {
+  const q = new URLSearchParams(location.search);
+  const clean = (v) => (v || '').replace(/[<>"'`&]/g, '').trim().slice(0, 32);
+  const n1 = clean(q.get('n1')), n2 = clean(q.get('n2'));
+  const dq = /^\d{4}-\d{2}-\d{2}$/.test(q.get('d') || '') ? q.get('d') : '';
+  let day = null;
+  if (dq) day = new Date(dq + 'T00:00:00');
+  else if (C.demo.on) { day = new Date(); day.setDate(day.getDate() + C.demo.daysAhead); }
+  if (day && !isNaN(day)) {
+    const p2 = (n) => String(n).padStart(2, '0');
+    const WD = ['Ням', 'Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба'];
+    const time = C.date.iso.slice(11, 16);                      // цаг хэвээр
+    C.date.iso     = `${day.getFullYear()}-${p2(day.getMonth() + 1)}-${p2(day.getDate())}T${time}:00+08:00`;
+    C.date.display = `${day.getFullYear()}.${p2(day.getMonth() + 1)}.${p2(day.getDate())}`;
+    C.date.weekday = `${WD[day.getDay()]} гараг`;
+  }
+  if (n1) C.child.name = n1;
+  if (n2) { C.parents.line = n2; C.closing.signature = n2; }
+  if (C.demo.on) document.addEventListener('DOMContentLoaded', () => {
+    const b = document.createElement('div');
+    b.textContent = C.demo.label;
+    b.setAttribute('aria-label', 'Жишээ урилга');
+    b.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;' +
+      'font:600 11px/1 system-ui,sans-serif;letter-spacing:.22em;padding:6px 12px;border-radius:999px;' +
+      'background:rgba(10,14,30,.6);color:#f3e7c4;backdrop-filter:blur(6px)';
+    document.body.appendChild(b);
+  });
+})(CONFIG);
 
 /* Байршлын холбоосыг CONFIG-оос үүсгэнэ */
 CONFIG.venue.href = CONFIG.venue.mapsUrl
