@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#070C1A">
 <title>Сэвлэг үргээх ёслол · Монголхүү</title>
-<meta name="description" content="Монголхүүгийн сэвлэг үргээх ёслол — 2026.09.15, Дархан хот.">
+<meta name="description" content="Монголхүүгийн сэвлэг үргээх ёслол — Дархан хот.">
 
 <!-- Шрифт. Spectral болон Onest хоёул кирилл (U+0400-045F) ба кирилл-өргөтгөл
      (U+0460-052F — ө, ү энд байдаг) subset-тэй нь шалгагдсан. -->
@@ -857,6 +857,7 @@ const CONFIG = {
    URL: ?n1=Тэмүүлэн&n2=Бат · Сараа&d=2026-12-20 — n1 хүүхдийн нэр, n2 эцэг эх.
    Нэр innerHTML-ээр ордог тул < > " ' ` & тэмдэгтийг хасаж, 32 тэмдэгтээр хязгаарлана. */
 (function applyDemo(C) {
+  if (!C.demo.on) return;                                     // жинхэнэ урилгад URL огноо, нэрийг солихгүй
   const q = new URLSearchParams(location.search);
   const clean = (v) => (v || '').replace(/[<>"'`&]/g, '').trim().slice(0, 32);
   const n1 = clean(q.get('n1')), n2 = clean(q.get('n2'));
