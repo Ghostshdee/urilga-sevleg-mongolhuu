@@ -10,6 +10,17 @@
 <title>Сэвлэг үргээх ёслол · Монголхүү</title>
 <meta name="description" content="Монголхүүгийн сэвлэг үргээх ёслол — Дархан хот.">
 
+<!-- Холбоосын preview JS ажиллуулдаггүй — нэр солиход эдгээрийг ГАРААР бас солино. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Сэвлэг үргээх ёслол · Монголхүү">
+<meta property="og:description" content="Монголхүүгийн сэвлэг үргээх ёслол — Дархан хот.">
+<meta property="og:locale" content="mn_MN">
+<meta property="og:image" content="https://ghostshdee.github.io/urilga-sevleg-mongolhuu/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Сэвлэг үргээх ёслол — Монголхүү. Одтой шөнийн тэнгэр, гэрлийн утас (жишээ урилга)">
+<meta name="twitter:card" content="summary_large_image">
+
 <!-- Шрифт. Spectral болон Onest хоёул кирилл (U+0400-045F) ба кирилл-өргөтгөл
      (U+0460-052F — ө, ү энд байдаг) subset-тэй нь шалгагдсан. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -628,6 +639,18 @@ a{ color: inherit; }
   border-radius: var(--radius);
 }
 
+/* --- Кредит — хуудасны хамгийн доод, нам гүм --- */
+.credit{
+  padding-block: 4px 30px;
+  text-align: center;
+  font-size: var(--t-label);   /* ≥12px */
+  letter-spacing: .12em;
+  color: var(--muted);
+  opacity: .6;
+}
+.credit a{ display: inline-block; padding: 8px 12px; text-decoration: none; }
+.credit a:hover, .credit a:focus-visible{ color: var(--amber); }
+
 /* ============================================================
    ХӨДӨЛГӨӨН УНТРААХ — нээх дэлгэц бүрэн алгасагдана
    ============================================================ */
@@ -726,6 +749,10 @@ a{ color: inherit; }
   <!-- 8. Төгсгөл — үе шат 5 -->
   <section id="closing" class="section shell" aria-label="Төгсгөл"></section>
 </main>
+
+<footer class="credit shell">
+  <a href="https://ghostshdee.github.io/" target="_blank" rel="noopener">Бүтээсэн: DOKAY.</a>
+</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
